@@ -10,16 +10,10 @@
 :root {
   --jungle-dark: #0a1f0a;
   --jungle-mid: #1a3a1a;
-  --jungle-light: #2d5a2d;
   --accent: #7cb342;
   --accent-glow: #a5d6a7;
   --text: #e8f5e9;
   --text-muted: rgba(232, 245, 233, 0.6);
-}
-
-html {
-  scroll-behavior: auto;
-  /* Désactivé pour le scrubbing fluide */
 }
 
 body {
@@ -33,7 +27,6 @@ body {
 .landing-container {
   position: relative;
   min-height: 400vh;
-  /* Espace de scroll généreux */
 }
 
 /* ===== HERO SECTION ===== */
@@ -46,6 +39,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
+  background: var(--jungle-dark);
 }
 
 .bg-video {
@@ -57,13 +51,10 @@ body {
   object-fit: cover;
   transition: opacity 0.5s ease;
   will-change: transform, opacity;
-  /* Force sa propre couche de composition GPU pour éviter les micro-saccades
-     de décodage pendant les seeks rapides du scrubbing */
   transform: translateZ(0);
   backface-visibility: hidden;
 }
 
-/* Overlays */
 .overlay-vignette {
   position: absolute;
   inset: 0;
@@ -79,7 +70,7 @@ body {
       rgba(10, 31, 10, 0.3) 0%,
       transparent 30%,
       transparent 60%,
-      rgba(10, 31, 10, 0.9) 100%);
+      rgba(10, 31, 10, 0.95) 100%);
   z-index: 2;
   pointer-events: none;
 }
@@ -184,17 +175,136 @@ body {
   background: #c8e6c9;
 }
 
-.cta-button.large {
-  padding: 1.2rem 3rem;
-  font-size: 1.1rem;
-}
-
 .cta-button svg {
   transition: transform 0.3s ease;
 }
 
 .cta-button:hover svg {
   transform: translate(3px, -3px);
+}
+
+/* ===== PHRASES ANCRÉES EN 3D ===== */
+.phrases-container {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  pointer-events: none;
+  /* Profondeur de champ : c'est ce qui donne l'illusion que les cartes
+     existent DANS la scène plutôt que collées à l'écran */
+  perspective: 1400px;
+  perspective-origin: 50% 50%;
+}
+
+/* L'ANCRE : contrôlée par le scroll (JS inline style) — profondeur, bascule,
+   mise au point. Ne porte AUCUNE animation CSS pour ne pas entrer en conflit
+   avec le transform inline. */
+.phrase-anchor {
+  position: absolute;
+  top: 50%;
+  margin-top: -140px;
+  max-width: 420px;
+  transform-style: preserve-3d;
+  will-change: transform, opacity, filter;
+}
+
+.phrase-anchor.left {
+  left: 5vw;
+  transform-origin: left center;
+}
+
+.phrase-anchor.right {
+  right: 5vw;
+  transform-origin: right center;
+}
+
+/* LA CARTE : le glassmorphisme + un léger balancement continu, comme une
+   feuille ou une branche qui bouge doucement — indépendant du scroll. */
+.phrase-card {
+  padding: 2rem 2.5rem;
+  border-radius: 24px;
+  background: rgba(10, 31, 10, 0.35);
+  backdrop-filter: blur(16px) saturate(1.4);
+  -webkit-backdrop-filter: blur(16px) saturate(1.4);
+  border: 1px solid rgba(165, 214, 167, 0.15);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  animation: leaf-sway 7s ease-in-out infinite;
+}
+
+.phrase-anchor.right .phrase-card {
+  animation-delay: -3.5s;
+  /* désynchronise les deux balancements pour éviter l'effet miroir */
+}
+
+@keyframes leaf-sway {
+
+  0%,
+  100% {
+    transform: rotate(-1deg) translateY(0);
+  }
+
+  50% {
+    transform: rotate(1deg) translateY(-5px);
+  }
+}
+
+/* Ombre de contact projetée au sol : ancre visuellement la carte dans la scène,
+   comme si elle reposait sur une feuille, une branche ou la terre. */
+.phrase-shadow {
+  position: absolute;
+  left: 10%;
+  right: 10%;
+  bottom: -18px;
+  height: 24px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.55) 0%, transparent 70%);
+  filter: blur(4px);
+  transform: scaleY(0.5);
+}
+
+.phrase-text {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(1.2rem, 2.5vw, 1.7rem);
+  font-weight: 400;
+  font-style: italic;
+  line-height: 1.5;
+  color: var(--text);
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.5);
+  margin: 0;
+}
+
+.phrase-line {
+  width: 40px;
+  height: 2px;
+  background: linear-gradient(90deg, var(--accent), var(--accent-glow));
+  border-radius: 1px;
+  margin-top: 1rem;
+  opacity: 0.7;
+}
+
+/* Responsive phrases */
+@media (max-width: 768px) {
+  .phrase-anchor {
+    max-width: 280px;
+    margin-top: -110px;
+  }
+
+  .phrase-anchor.left,
+  .phrase-anchor.right {
+    left: 50%;
+    right: auto;
+    margin-left: -140px;
+  }
+
+  .phrase-card {
+    padding: 1.5rem 1.8rem;
+    border-radius: 20px;
+  }
+
+  .phrase-text {
+    font-size: 1.1rem;
+  }
 }
 
 /* ===== SCROLL HINT ===== */
@@ -270,118 +380,6 @@ body {
   box-shadow: 0 0 10px rgba(124, 179, 66, 0.5);
 }
 
-/* ===== CONTENT SECTION ===== */
-.content-section {
-  position: relative;
-  z-index: 10;
-  background: linear-gradient(to bottom, var(--jungle-dark), #051405);
-  padding: 8rem 2rem 4rem;
-  min-height: 100vh;
-  will-change: opacity;
-}
-
-.content-inner {
-  max-width: 1100px;
-  margin: 0 auto;
-}
-
-.section-title {
-  font-family: 'Playfair Display', serif;
-  font-size: clamp(2rem, 5vw, 3.5rem);
-  font-weight: 700;
-  text-align: center;
-  margin-bottom: 4rem;
-  color: var(--accent-glow);
-  will-change: transform, opacity;
-}
-
-/* ===== FEATURES GRID ===== */
-.features-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 2rem;
-  margin-bottom: 6rem;
-}
-
-.feature-card {
-  background: rgba(45, 90, 45, 0.15);
-  border: 1px solid rgba(124, 179, 66, 0.15);
-  border-radius: 20px;
-  padding: 2.5rem;
-  backdrop-filter: blur(10px);
-  transform: translateY(30px);
-  opacity: 0;
-  transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.feature-card.visible {
-  transform: translateY(0);
-  opacity: 1;
-}
-
-.feature-card:hover {
-  border-color: rgba(124, 179, 66, 0.4);
-  transform: translateY(-4px);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
-}
-
-.feature-icon {
-  font-size: 2.5rem;
-  margin-bottom: 1.25rem;
-}
-
-.feature-card h3 {
-  font-size: 1.3rem;
-  font-weight: 600;
-  margin-bottom: 0.75rem;
-  color: var(--accent-glow);
-}
-
-.feature-card p {
-  color: var(--text-muted);
-  line-height: 1.7;
-  font-size: 0.95rem;
-}
-
-/* ===== QUOTE BLOCK ===== */
-.quote-block {
-  text-align: center;
-  padding: 4rem 2rem;
-  margin: 4rem 0;
-  border-top: 1px solid rgba(124, 179, 66, 0.2);
-  border-bottom: 1px solid rgba(124, 179, 66, 0.2);
-  will-change: opacity;
-}
-
-.quote-block blockquote {
-  font-family: 'Playfair Display', serif;
-  font-size: clamp(1.3rem, 3vw, 2rem);
-  font-style: italic;
-  line-height: 1.5;
-  color: var(--accent-glow);
-  margin-bottom: 1rem;
-}
-
-.quote-block cite {
-  font-size: 0.9rem;
-  color: var(--text-muted);
-  font-style: normal;
-}
-
-/* ===== CTA FINAL ===== */
-.cta-final {
-  text-align: center;
-  padding: 4rem 0 6rem;
-  will-change: opacity;
-}
-
-.cta-final h3 {
-  font-family: 'Playfair Display', serif;
-  font-size: clamp(1.5rem, 3vw, 2.2rem);
-  margin-bottom: 2rem;
-  color: var(--text);
-}
-
 /* ===== SCROLL SPACER ===== */
 .scroll-spacer {
   height: 100vh;
@@ -394,26 +392,12 @@ body {
     padding: 1.5rem;
   }
 
-  .content-section {
-    padding: 6rem 1.5rem 3rem;
-  }
-
-  .features-grid {
-    grid-template-columns: 1fr;
-    gap: 1.5rem;
-  }
-
-  .feature-card {
-    padding: 2rem;
-  }
-
   .cta-button {
     padding: 0.9rem 2rem;
     font-size: 0.95rem;
   }
 }
 
-/* Réduction de mouvement */
 @media (prefers-reduced-motion: reduce) {
   .particle {
     animation: none;
@@ -423,8 +407,7 @@ body {
     animation: none;
   }
 
-  .feature-card {
-    transform: none;
-    opacity: 1;
+  .phrase-card {
+    animation: none;
   }
 }

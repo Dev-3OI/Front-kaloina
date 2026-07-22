@@ -1,6 +1,6 @@
 // App.jsx
 import { useEffect, useRef, useState } from 'react';
-import videoSrc from './assets/video.mp4';  // ← IMPORT ICI
+import videoSrc from './assets/video.mp4';
 import './App.css';
 
 function App() {
@@ -8,8 +8,12 @@ function App() {
   const [isVideoReady, setIsVideoReady] = useState(false);
   const [displayProgress, setDisplayProgress] = useState(0);
 
-  // targetProgress = où le scroll dit qu'on devrait être (mis à jour instantanément)
-  // smoothProgress = valeur réellement appliquée (interpolée en continu vers la cible)
+  // La vidéo (raccord de boucle "seamless") fond au noir sur sa dernière ~1.5s
+  // et fond depuis le noir sur sa première ~1.5s. On exclut ces deux zones du
+  // scrubbing pour ne jamais afficher une frame quasi noire pendant le scroll.
+  const VIDEO_MIN_TIME = 2;   // s — juste après le fondu d'entrée
+  const VIDEO_MAX_TIME = 32;  // s — juste avant le fondu de sortie
+
   const targetProgress = useRef(0);
   const smoothProgress = useRef(0);
   const rafId = useRef(null);
@@ -23,6 +27,11 @@ function App() {
     const handleLoaded = () => {
       setIsVideoReady(true);
       video.pause();
+      // On démarre sur une frame lumineuse (voir VIDEO_MAX_TIME plus bas),
+      // pas sur la toute fin du fichier qui est presque noire (raccord de boucle).
+      if (video.duration && !isNaN(video.duration)) {
+        video.currentTime = Math.min(VIDEO_MAX_TIME, video.duration);
+      }
     };
 
     if (video.readyState >= 1) {
@@ -36,8 +45,7 @@ function App() {
     };
   }, []);
 
-  // Suivi de l'état de seek natif : tant qu'un seek précédent n'est pas fini,
-  // on n'en déclenche pas un nouveau par-dessus (c'est ça qui crée les à-coups).
+  // Suivi du seek natif
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
@@ -54,7 +62,7 @@ function App() {
     };
   }, []);
 
-  // Le scroll ne fait QUE mettre à jour la cible (calcul pur, aucune écriture DOM lourde).
+  // Scroll → target
   useEffect(() => {
     const updateTarget = () => {
       const scrollY = window.scrollY || window.pageYOffset;
@@ -74,14 +82,10 @@ function App() {
     };
   }, []);
 
-  // Boucle rAF PERMANENTE : elle tourne en continu (pas seulement pendant le scroll)
-  // et rapproche smoothProgress de targetProgress à chaque frame. C'est ce qui rend
-  // le scrubbing fluide même quand le scroll s'arrête brusquement (trackpad, molette...).
+  // Boucle rAF pour scrubbing fluide
   useEffect(() => {
-    // Plus bas = plus lissé (mais plus "en retard" derrière le scroll réel)
-    // Plus haut = plus réactif (mais plus proche du scroll brut)
     const EASE = 0.14;
-    const SEEK_THRESHOLD = 0.008; // en secondes, évite les écritures currentTime inutiles
+    const SEEK_THRESHOLD = 0.008;
 
     const tick = () => {
       const diff = targetProgress.current - smoothProgress.current;
@@ -97,7 +101,8 @@ function App() {
         !isNaN(video.duration) &&
         !isSeeking.current
       ) {
-        const targetTime = smoothProgress.current * video.duration;
+        const clippedSpan = VIDEO_MAX_TIME - VIDEO_MIN_TIME;
+        const targetTime = VIDEO_MIN_TIME + (1 - smoothProgress.current) * clippedSpan;
         if (Math.abs(video.currentTime - targetTime) > SEEK_THRESHOLD) {
           video.currentTime = targetTime;
         }
@@ -111,9 +116,11 @@ function App() {
   }, [isVideoReady]);
 
   const scrollProgress = displayProgress;
-  const heroProgress = Math.min(scrollProgress * 3, 1);
-  const videoOpacity = Math.min(heroProgress * 1.5, 1);
-  const contentFadeIn = Math.max(0, Math.min((scrollProgress - 0.15) / 0.2, 1));
+  // Le titre se révèle et repart très vite : le site doit être "installé" dans
+  // l'ambiance du premier texte dès le tout début du scroll, pas après 1/3 de page.
+  const heroProgress = Math.min(scrollProgress * 10, 1);
+  const videoOpacity = isVideoReady ? Math.min(heroProgress * 1.5, 1) : 0;
+  const contentFadeIn = Math.max(0, Math.min((scrollProgress - 0.02) / 0.06, 1));
 
   const getRevealStyle = (delay = 0, duration = 0.3) => {
     const p = Math.max(0, Math.min((heroProgress - delay) / duration, 1));
@@ -123,11 +130,52 @@ function App() {
     };
   };
 
+  // Phrases glassmorph — alternance gauche/droite. Séquentiel : chaque élément
+  // (titre puis phrase 1, 2, 3) disparaît COMPLÈTEMENT avant que le suivant ne
+  // commence à apparaître — pas de chevauchement.
+  // Le titre finit de s'effacer à scrollProgress ≈ 0.08 (voir contentFadeIn).
+  const phrases = [
+    { text: "Chaque pas vous rapproche du mystère", start: 0.16, end: 0.30, align: 'left' },
+    { text: "La lumière danse entre les feuilles", start: 0.44, end: 0.58, align: 'right' },
+    { text: "Le silence de la forêt raconte mille histoires", start: 0.72, end: 0.90, align: 'left' },
+  ];
+
+  // Chaque carte "émerge" de la profondeur de la vidéo (translateZ négatif → 0),
+  // se redresse (rotateY tiltBase → 0) comme si elle se posait bien à plat sur
+  // une feuille ou une branche, grandit (scale) et se met au point (blur) à
+  // mesure que la caméra s'en approche, puis repart en profondeur en s'estompant.
+  const getPhraseStyle = (start, end, align, fade = 0.07) => {
+    let visibility = 0;
+    if (scrollProgress >= start && scrollProgress <= end) {
+      visibility = 1;
+    } else if (scrollProgress >= start - fade && scrollProgress < start) {
+      visibility = (scrollProgress - (start - fade)) / fade;
+    } else if (scrollProgress > end && scrollProgress <= end + fade) {
+      visibility = 1 - (scrollProgress - end) / fade;
+    }
+    visibility = Math.max(0, Math.min(visibility, 1));
+
+    const tiltBase = align === 'left' ? 18 : -18;
+    const rotateY = tiltBase * (1 - visibility);
+    const translateZ = -160 + visibility * 160;
+    const scale = 0.8 + visibility * 0.2;
+    const blurPx = (1 - visibility) * 6;
+    const translateY = (1 - visibility) * 32;
+
+    return {
+      anchorStyle: {
+        opacity: visibility,
+        transform: `translateZ(${translateZ}px) translateY(${translateY}px) scale(${scale}) rotateY(${rotateY}deg)`,
+        filter: `blur(${blurPx}px)`,
+      },
+      shadowOpacity: visibility * 0.55,
+    };
+  };
+
   return (
     <div className="landing-container">
       {/* ===== HERO SECTION (sticky) ===== */}
       <section className="hero-section">
-        {/* Vidéo avec import */}
         <video
           ref={videoRef}
           muted
@@ -137,7 +185,7 @@ function App() {
           className="bg-video"
           style={{ opacity: videoOpacity }}
         >
-          <source src={videoSrc} type="video/mp4" />  {/* ← UTILISE LA VARIABLE */}
+          <source src={videoSrc} type="video/mp4" />
         </video>
 
         <div className="overlay-vignette" />
@@ -153,6 +201,7 @@ function App() {
           ))}
         </div>
 
+        {/* Hero content initial */}
         <div className="hero-content" style={{ opacity: 1 - contentFadeIn }}>
           <h1 className="hero-title">
             <span className="reveal-line" style={getRevealStyle(0)}>
@@ -177,6 +226,26 @@ function App() {
           </div>
         </div>
 
+        {/* Phrases ancrées en 3D dans la scène */}
+        <div className="phrases-container">
+          {phrases.map((p, i) => {
+            const { anchorStyle, shadowOpacity } = getPhraseStyle(p.start, p.end, p.align);
+            return (
+              <div
+                key={i}
+                className={`phrase-anchor ${p.align}`}
+                style={anchorStyle}
+              >
+                <div className="phrase-card">
+                  <p className="phrase-text">{p.text}</p>
+                  <div className="phrase-line" />
+                </div>
+                <div className="phrase-shadow" style={{ opacity: shadowOpacity }} />
+              </div>
+            );
+          })}
+        </div>
+
         <div className="scroll-hint" style={{ opacity: Math.max(0, 0.8 - heroProgress * 2) }}>
           <div className="mouse">
             <div className="wheel" />
@@ -190,38 +259,6 @@ function App() {
       </section>
 
       <div className="scroll-spacer" />
-    </div>
-  );
-}
-
-function FeatureCard({ icon, title, description, delay }) {
-  const ref = useRef(null);
-  const [visible, setVisible] = useState(false);
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setVisible(true);
-          observer.disconnect();
-        }
-      },
-      { threshold: 0.2 }
-    );
-
-    if (ref.current) observer.observe(ref.current);
-    return () => observer.disconnect();
-  }, []);
-
-  return (
-    <div
-      ref={ref}
-      className={`feature-card ${visible ? 'visible' : ''}`}
-      style={{ transitionDelay: `${delay}s` }}
-    >
-      <div className="feature-icon">{icon}</div>
-      <h3>{title}</h3>
-      <p>{description}</p>
     </div>
   );
 }

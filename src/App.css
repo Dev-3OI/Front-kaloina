@@ -1,0 +1,430 @@
+/* App.css */
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@300;400;500;600&display=swap');
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  --jungle-dark: #0a1f0a;
+  --jungle-mid: #1a3a1a;
+  --jungle-light: #2d5a2d;
+  --accent: #7cb342;
+  --accent-glow: #a5d6a7;
+  --text: #e8f5e9;
+  --text-muted: rgba(232, 245, 233, 0.6);
+}
+
+html {
+  scroll-behavior: auto;
+  /* Désactivé pour le scrubbing fluide */
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  background: var(--jungle-dark);
+  color: var(--text);
+  overflow-x: hidden;
+}
+
+/* ===== LANDING CONTAINER ===== */
+.landing-container {
+  position: relative;
+  min-height: 400vh;
+  /* Espace de scroll généreux */
+}
+
+/* ===== HERO SECTION ===== */
+.hero-section {
+  position: sticky;
+  top: 0;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.bg-video {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: opacity 0.5s ease;
+  will-change: transform, opacity;
+  /* Force sa propre couche de composition GPU pour éviter les micro-saccades
+     de décodage pendant les seeks rapides du scrubbing */
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+/* Overlays */
+.overlay-vignette {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at center, transparent 40%, rgba(10, 31, 10, 0.8) 100%);
+  z-index: 2;
+  pointer-events: none;
+}
+
+.overlay-gradient {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom,
+      rgba(10, 31, 10, 0.3) 0%,
+      transparent 30%,
+      transparent 60%,
+      rgba(10, 31, 10, 0.9) 100%);
+  z-index: 2;
+  pointer-events: none;
+}
+
+/* Particules */
+.particles {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.particle {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background: rgba(165, 214, 167, 0.4);
+  border-radius: 50%;
+  animation: float-up linear infinite;
+}
+
+@keyframes float-up {
+  0% {
+    transform: translateY(100vh) scale(0);
+    opacity: 0;
+  }
+
+  10% {
+    opacity: 1;
+  }
+
+  90% {
+    opacity: 1;
+  }
+
+  100% {
+    transform: translateY(-10vh) scale(1.5);
+    opacity: 0;
+  }
+}
+
+/* ===== HERO CONTENT ===== */
+.hero-content {
+  position: relative;
+  z-index: 4;
+  text-align: center;
+  padding: 2rem;
+  max-width: 900px;
+}
+
+.hero-title {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(3rem, 8vw, 6.5rem);
+  font-weight: 700;
+  line-height: 1.05;
+  margin-bottom: 1.5rem;
+  text-shadow: 0 4px 40px rgba(0, 0, 0, 0.6);
+}
+
+.reveal-line {
+  display: block;
+  will-change: transform, opacity;
+}
+
+.hero-subtitle {
+  font-size: clamp(1.1rem, 2.5vw, 1.5rem);
+  font-weight: 300;
+  color: var(--text-muted);
+  margin-bottom: 2.5rem;
+  max-width: 500px;
+  margin-left: auto;
+  margin-right: auto;
+  line-height: 1.6;
+  will-change: transform, opacity;
+}
+
+.hero-cta {
+  will-change: transform, opacity;
+}
+
+.cta-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 2.5rem;
+  font-family: 'Inter', sans-serif;
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--jungle-dark);
+  background: var(--accent-glow);
+  border: none;
+  border-radius: 50px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 20px rgba(124, 179, 66, 0.3);
+}
+
+.cta-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(124, 179, 66, 0.5);
+  background: #c8e6c9;
+}
+
+.cta-button.large {
+  padding: 1.2rem 3rem;
+  font-size: 1.1rem;
+}
+
+.cta-button svg {
+  transition: transform 0.3s ease;
+}
+
+.cta-button:hover svg {
+  transform: translate(3px, -3px);
+}
+
+/* ===== SCROLL HINT ===== */
+.scroll-hint {
+  position: absolute;
+  bottom: 2.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 4;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  transition: opacity 0.5s ease;
+}
+
+.scroll-hint span {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: var(--text-muted);
+}
+
+.mouse {
+  width: 26px;
+  height: 40px;
+  border: 2px solid var(--text-muted);
+  border-radius: 13px;
+  position: relative;
+}
+
+.wheel {
+  width: 4px;
+  height: 8px;
+  background: var(--accent-glow);
+  border-radius: 2px;
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  animation: scroll-wheel 2s ease-in-out infinite;
+}
+
+@keyframes scroll-wheel {
+
+  0%,
+  100% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  50% {
+    opacity: 0.3;
+    transform: translateX(-50%) translateY(8px);
+  }
+}
+
+/* ===== PROGRESS BAR ===== */
+.progress-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.1);
+  z-index: 5;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), var(--accent-glow));
+  transition: width 0.1s linear;
+  box-shadow: 0 0 10px rgba(124, 179, 66, 0.5);
+}
+
+/* ===== CONTENT SECTION ===== */
+.content-section {
+  position: relative;
+  z-index: 10;
+  background: linear-gradient(to bottom, var(--jungle-dark), #051405);
+  padding: 8rem 2rem 4rem;
+  min-height: 100vh;
+  will-change: opacity;
+}
+
+.content-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.section-title {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 4rem;
+  color: var(--accent-glow);
+  will-change: transform, opacity;
+}
+
+/* ===== FEATURES GRID ===== */
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 2rem;
+  margin-bottom: 6rem;
+}
+
+.feature-card {
+  background: rgba(45, 90, 45, 0.15);
+  border: 1px solid rgba(124, 179, 66, 0.15);
+  border-radius: 20px;
+  padding: 2.5rem;
+  backdrop-filter: blur(10px);
+  transform: translateY(30px);
+  opacity: 0;
+  transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.feature-card.visible {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+.feature-card:hover {
+  border-color: rgba(124, 179, 66, 0.4);
+  transform: translateY(-4px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+}
+
+.feature-icon {
+  font-size: 2.5rem;
+  margin-bottom: 1.25rem;
+}
+
+.feature-card h3 {
+  font-size: 1.3rem;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+  color: var(--accent-glow);
+}
+
+.feature-card p {
+  color: var(--text-muted);
+  line-height: 1.7;
+  font-size: 0.95rem;
+}
+
+/* ===== QUOTE BLOCK ===== */
+.quote-block {
+  text-align: center;
+  padding: 4rem 2rem;
+  margin: 4rem 0;
+  border-top: 1px solid rgba(124, 179, 66, 0.2);
+  border-bottom: 1px solid rgba(124, 179, 66, 0.2);
+  will-change: opacity;
+}
+
+.quote-block blockquote {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(1.3rem, 3vw, 2rem);
+  font-style: italic;
+  line-height: 1.5;
+  color: var(--accent-glow);
+  margin-bottom: 1rem;
+}
+
+.quote-block cite {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  font-style: normal;
+}
+
+/* ===== CTA FINAL ===== */
+.cta-final {
+  text-align: center;
+  padding: 4rem 0 6rem;
+  will-change: opacity;
+}
+
+.cta-final h3 {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(1.5rem, 3vw, 2.2rem);
+  margin-bottom: 2rem;
+  color: var(--text);
+}
+
+/* ===== SCROLL SPACER ===== */
+.scroll-spacer {
+  height: 100vh;
+  background: linear-gradient(to bottom, #051405, #020a02);
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+  .hero-content {
+    padding: 1.5rem;
+  }
+
+  .content-section {
+    padding: 6rem 1.5rem 3rem;
+  }
+
+  .features-grid {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+
+  .feature-card {
+    padding: 2rem;
+  }
+
+  .cta-button {
+    padding: 0.9rem 2rem;
+    font-size: 0.95rem;
+  }
+}
+
+/* Réduction de mouvement */
+@media (prefers-reduced-motion: reduce) {
+  .particle {
+    animation: none;
+  }
+
+  .wheel {
+    animation: none;
+  }
+
+  .feature-card {
+    transform: none;
+    opacity: 1;
+  }
+}

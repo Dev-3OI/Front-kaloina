@@ -1,0 +1,341 @@
+/* ===================================================================
+   SECTION PROBLÈMES — COLLAGE PHOTO EN 3D + PARALLAXE
+   À coller dans App.css (ou garder importé séparément via
+   ProblemsSection.jsx : import './ProblemsSection.css')
+   =================================================================== */
+
+/* Léger chevauchement avec la section précédente, comme la parallax-section
+   le fait déjà avec la vidéo — garde la continuité visuelle entre sections. */
+.problems-wrap {
+    position: relative;
+    height: 400vh;
+    margin-top: -40px;
+    z-index: 2;
+}
+
+.problems-section {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    width: 100%;
+    overflow: hidden;
+    background: radial-gradient(ellipse at 50% 30%, var(--jungle-mid) 0%, var(--jungle-dark) 70%);
+    border-radius: 40px 40px 0 0;
+    box-shadow: 0 -20px 50px rgba(0, 0, 0, 0.35);
+}
+
+/* ===== Calques décoratifs en parallaxe (même esprit que .parallax-layer) ===== */
+.problems-parallax-layer {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    will-change: transform;
+    z-index: 1;
+}
+
+.problems-parallax-layer .deco-leaf {
+    opacity: 0.35;
+}
+
+.problems-parallax-layer .leaf-1 {
+    top: 10%;
+    left: -8%;
+}
+
+.problems-parallax-layer .leaf-2 {
+    bottom: 8%;
+    right: -6%;
+}
+
+.problems-parallax-layer .deco-dot {
+    opacity: 0.5;
+}
+
+/* Titre d'intro, au-dessus du collage, visible au tout début du scroll */
+.problems-heading {
+    position: absolute;
+    top: 7%;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+    text-align: center;
+    transition: opacity 0.2s ease;
+    pointer-events: none;
+    text-shadow: 0 4px 24px rgba(0, 0, 0, 0.6);
+}
+
+.problems-heading .parallax-title {
+    margin-bottom: 0;
+}
+
+/* Zone de jeu du collage : remplit TOUTE la section (comme avant), pour
+   que la photo héros soit VRAIMENT plein écran à scale(1) — pas de marge
+   ici. La marge/respiration visuelle vient du décalage des 4 coins
+   (.corner-*, voir plus bas), pas d'un rétrécissement du stage lui-même.
+   La perspective CSS reste ici pour que les rotateX/rotateY des photos
+   donnent un vrai effet de profondeur 3D. */
+.collage-stage {
+    position: absolute;
+    inset: 0;
+    perspective: 1600px;
+    transform-style: preserve-3d;
+}
+
+/* Photo héros (sécheresse) : plein écran au départ (scale 1 = 100% de la
+   stage, déjà en retrait grâce à la marge de .collage-stage), puis
+   rétractée vers le centre via `scale()` piloté par le scroll. */
+.collage-hero {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    z-index: 5;
+    transform-origin: center center;
+    box-shadow:
+        0 30px 70px rgba(0, 0, 0, 0.5),
+        0 0 0 1px rgba(217, 184, 119, 0.12);
+    transition: filter 0.2s linear;
+    will-change: transform, border-radius, filter;
+}
+
+.collage-hero img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.collage-hero-caption {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: 2.5rem 2.5rem 2rem;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.85) 0%, transparent 100%);
+    transition: opacity 0.2s ease;
+}
+
+.collage-hero-caption h3 {
+    font-family: 'Bungee', serif;
+    font-size: clamp(1.3rem, 2.6vw, 1.9rem);
+    color: var(--text);
+    margin: 0.4rem 0 0.4rem;
+    line-height: 1.25;
+}
+
+.collage-hero-caption p {
+    font-size: 0.95rem;
+    color: var(--text-muted);
+    line-height: 1.55;
+    max-width: 420px;
+}
+
+/*
+  ===== Les 4 photos du collage : positionnement calculé pour ne JAMAIS
+  chevaucher la photo héros rétractée, avec un effet 3D permanent =====
+
+  La photo héros, une fois rétractée, occupe le carré central de 46%
+  (scale final) centré dans la stage → elle va de 27% à 73% sur chaque
+  axe (marge de 27% de chaque côté).
+
+  Chaque coin fait 22% x 22%, décalé de 3% du bord de la stage :
+    bord extérieur du coin = 3% + 22% = 25%
+  25% < 27% → il reste TOUJOURS 2% de marge visible entre chaque coin et
+  la photo centrale, quelle que soit la taille d'écran (tout est en %).
+
+  Chaque photo garde une légère inclinaison 3D permanente (rotateX/rotateY,
+  voir CORNER_TILT dans le .jsx) — comme des photos posées légèrement de
+  travers sur une table, pas de simple aplat 2D.
+*/
+.collage-item {
+    position: absolute;
+    width: 24%;
+    height: 24%;
+    min-width: 220px;
+    min-height: 220px;
+    border-radius: 18px;
+    overflow: hidden;
+    z-index: 3;
+    transform-style: preserve-3d;
+    box-shadow:
+        0 24px 50px rgba(0, 0, 0, 0.5),
+        0 0 0 1px rgba(217, 184, 119, 0.15);
+    will-change: transform, opacity;
+}
+
+.collage-item img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.collage-item-caption {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: 1rem 1.1rem 0.9rem;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.9) 0%, transparent 100%);
+}
+
+.collage-item-caption h3 {
+    font-family: 'Bungee', serif;
+    font-size: clamp(0.9rem, 1.4vw, 1.05rem);
+    color: var(--text);
+    margin: 0.25rem 0 0.25rem;
+    line-height: 1.3;
+}
+
+.collage-item-caption p {
+    font-size: 0.74rem;
+    color: var(--text-muted);
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.problem-index {
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--accent-glow);
+}
+
+/* Positions des 4 coins : 5% du bord de la stage sur chaque axe. Avec une
+   taille de 20%, le bord extérieur de chaque coin atteint 25% — toujours
+   sous la marge de 27% laissée par le héros rétracté (scale final 0.46),
+   donc toujours 2% de marge de sécurité, sans chevauchement possible. */
+.corner-top-left {
+    top: 4%;
+    left: 4%;
+}
+
+.corner-top-right {
+    top: 4%;
+    right: 4%;
+}
+
+.corner-bottom-left {
+    bottom: 4%;
+    left: 4%;
+}
+
+.corner-bottom-right {
+    bottom: 4%;
+    right: 4%;
+}
+
+/* Phrase de sortie, sous le collage, quand celui-ci est presque complet */
+.problems-outro {
+    position: absolute;
+    bottom: 4%;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+    font-family: 'Bungee', serif;
+    font-style: italic;
+    font-size: clamp(1rem, 1.8vw, 1.3rem);
+    color: var(--text-muted);
+    transition: opacity 0.2s ease;
+    pointer-events: none;
+    text-shadow: 0 4px 20px rgba(0, 0, 0, 0.7);
+}
+
+/* ===================================================================
+   RESPONSIVE — en dessous de 760px, le collage en positionnement absolu
+   devient illisible (photos trop petites, textes coupés). On abandonne
+   donc l'effet de scroll-pinning ET l'effet 3D : la section redevient un
+   simple empilement vertical où les 5 photos s'affichent normalement,
+   toutes entièrement visibles, sans dépendre du scroll.
+   =================================================================== */
+@media (max-width: 760px) {
+    .problems-wrap {
+        height: auto;
+        margin-top: 0;
+    }
+
+    .problems-section {
+        position: static;
+        height: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+        padding: 4rem 1.25rem;
+        border-radius: 24px 24px 0 0;
+    }
+
+    .problems-parallax-layer {
+        display: none;
+    }
+
+    .problems-heading {
+        position: static;
+        transform: none;
+        opacity: 1 !important;
+        margin-bottom: 0.5rem;
+    }
+
+    .collage-stage {
+        position: static;
+        inset: auto;
+        perspective: none;
+        display: flex;
+        flex-direction: column;
+        gap: 1.25rem;
+    }
+
+    .collage-hero {
+        position: static;
+        width: 100%;
+        aspect-ratio: 4 / 5;
+        transform: none !important;
+        border-radius: 20px !important;
+        filter: none !important;
+    }
+
+    .collage-hero-caption {
+        opacity: 1 !important;
+        padding: 1.5rem 1.5rem 1.25rem;
+    }
+
+    .collage-item {
+        position: static;
+        width: 100%;
+        height: auto;
+        aspect-ratio: 4 / 5;
+        min-width: 0;
+        min-height: 0;
+        opacity: 1 !important;
+        transform: none !important;
+        pointer-events: auto !important;
+    }
+
+    .collage-item-caption p {
+        -webkit-line-clamp: 3;
+    }
+
+    .problems-outro {
+        position: static;
+        transform: none;
+        opacity: 1 !important;
+        margin-top: 0.5rem;
+        text-align: center;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+    .collage-hero,
+    .collage-item,
+    .problems-parallax-layer {
+        transition: none !important;
+        transform: none !important;
+    }
+}

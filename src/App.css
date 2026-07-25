@@ -1,5 +1,5 @@
 /* App.css */
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@300;400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Bungee&family=Changa+One:ital@0;1&display=swap');
 
 * {
   margin: 0;
@@ -8,12 +8,19 @@
 }
 
 :root {
-  --jungle-dark: #0a1f0a;
-  --jungle-mid: #1a3a1a;
-  --accent: #7cb342;
-  --accent-glow: #a5d6a7;
-  --text: #e8f5e9;
-  --text-muted: rgba(232, 245, 233, 0.6);
+  /* Palette recalée sur les tons réels de la vidéo : vert forêt très sombre,
+     presque noir, avec une touche de lumière chaude (rayons dorés qui
+     filtrent entre les feuilles) plutôt qu'un vert fluo artificiel. */
+  --jungle-dark: #000000;
+  --jungle-mid: #1c1c1c;
+  --jungle-light: #855800;
+  --accent-glow: #d9b877;
+  /* lumière dorée chaude, comme les rayons dans la vidéo */
+  --accent-glow-soft: #b98f4e;
+  /* doré plus profond, pour les dégradés (sans vert) */
+  --text: #ece7da;
+  /* blanc cassé chaud, pas de blanc pur */
+  --text-muted: rgba(236, 231, 218, 0.6);
 }
 
 body {
@@ -23,10 +30,36 @@ body {
   overflow-x: hidden;
 }
 
+.solution-icon {
+  width: 84px;
+  height: 84px;
+  object-fit: contain;
+  filter: drop-shadow(0 8px 20px rgba(0, 0, 0, 0.35));
+  transition: transform 0.4s ease;
+  margin-bottom: 1.25rem;
+}
+
+.solution-item.active .solution-icon {
+  transform: scale(1.05);
+}
+
+@media (max-width: 900px) {
+  .solution-icon {
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
+
+@media (max-width: 600px) {
+  .solution-icon {
+    width: 68px;
+    height: 68px;
+  }
+}
+
 /* ===== LANDING CONTAINER ===== */
 .landing-container {
   position: relative;
-  min-height: 400vh;
 }
 
 /* ===== HERO SECTION ===== */
@@ -58,7 +91,7 @@ body {
 .overlay-vignette {
   position: absolute;
   inset: 0;
-  background: radial-gradient(ellipse at center, transparent 40%, rgba(10, 31, 10, 0.8) 100%);
+  background: radial-gradient(ellipse at center, transparent 40%, rgba(7, 15, 9, 0.85) 100%);
   z-index: 2;
   pointer-events: none;
 }
@@ -67,15 +100,14 @@ body {
   position: absolute;
   inset: 0;
   background: linear-gradient(to bottom,
-      rgba(10, 31, 10, 0.3) 0%,
+      rgba(7, 15, 9, 0.35) 0%,
       transparent 30%,
       transparent 60%,
-      rgba(10, 31, 10, 0.95) 100%);
+      rgba(7, 15, 9, 0.95) 100%);
   z-index: 2;
   pointer-events: none;
 }
 
-/* Particules */
 .particles {
   position: absolute;
   inset: 0;
@@ -88,7 +120,8 @@ body {
   position: absolute;
   width: 4px;
   height: 4px;
-  background: rgba(165, 214, 167, 0.4);
+  background: rgba(217, 184, 119, 0.45);
+  /* particules dorées, comme des poussières de lumière */
   border-radius: 50%;
   animation: float-up linear infinite;
 }
@@ -123,12 +156,13 @@ body {
 }
 
 .hero-title {
-  font-family: 'Playfair Display', serif;
+  font-family: 'Bungee', serif;
   font-size: clamp(3rem, 8vw, 6.5rem);
   font-weight: 700;
   line-height: 1.05;
   margin-bottom: 1.5rem;
   text-shadow: 0 4px 40px rgba(0, 0, 0, 0.6);
+  font-style: normal;
 }
 
 .reveal-line {
@@ -166,13 +200,13 @@ body {
   border-radius: 50px;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 20px rgba(124, 179, 66, 0.3);
+  box-shadow: 0 4px 20px rgba(217, 184, 119, 0.25);
 }
 
 .cta-button:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 30px rgba(124, 179, 66, 0.5);
-  background: #c8e6c9;
+  box-shadow: 0 8px 30px rgba(217, 184, 119, 0.4);
+  background: #e6cc99;
 }
 
 .cta-button svg {
@@ -189,15 +223,10 @@ body {
   inset: 0;
   z-index: 5;
   pointer-events: none;
-  /* Profondeur de champ : c'est ce qui donne l'illusion que les cartes
-     existent DANS la scène plutôt que collées à l'écran */
   perspective: 1400px;
   perspective-origin: 50% 50%;
 }
 
-/* L'ANCRE : contrôlée par le scroll (JS inline style) — profondeur, bascule,
-   mise au point. Ne porte AUCUNE animation CSS pour ne pas entrer en conflit
-   avec le transform inline. */
 .phrase-anchor {
   position: absolute;
   top: 50%;
@@ -217,24 +246,21 @@ body {
   transform-origin: right center;
 }
 
-/* LA CARTE : le glassmorphisme + un léger balancement continu, comme une
-   feuille ou une branche qui bouge doucement — indépendant du scroll. */
 .phrase-card {
   padding: 2rem 2.5rem;
   border-radius: 24px;
-  background: rgba(10, 31, 10, 0.35);
-  backdrop-filter: blur(16px) saturate(1.4);
-  -webkit-backdrop-filter: blur(16px) saturate(1.4);
-  border: 1px solid rgba(165, 214, 167, 0.15);
+  background: rgba(7, 15, 9, 0.4);
+  backdrop-filter: blur(16px) saturate(1.2);
+  -webkit-backdrop-filter: blur(16px) saturate(1.2);
+  border: 1px solid rgba(217, 184, 119, 0.15);
   box-shadow:
-    0 8px 32px rgba(0, 0, 0, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    0 8px 32px rgba(0, 0, 0, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
   animation: leaf-sway 7s ease-in-out infinite;
 }
 
 .phrase-anchor.right .phrase-card {
   animation-delay: -3.5s;
-  /* désynchronise les deux balancements pour éviter l'effet miroir */
 }
 
 @keyframes leaf-sway {
@@ -249,8 +275,6 @@ body {
   }
 }
 
-/* Ombre de contact projetée au sol : ancre visuellement la carte dans la scène,
-   comme si elle reposait sur une feuille, une branche ou la terre. */
 .phrase-shadow {
   position: absolute;
   left: 10%;
@@ -277,13 +301,12 @@ body {
 .phrase-line {
   width: 40px;
   height: 2px;
-  background: linear-gradient(90deg, var(--accent), var(--accent-glow));
+  background: linear-gradient(90deg, var(--accent-glow-soft), var(--accent-glow));
   border-radius: 1px;
   margin-top: 1rem;
   opacity: 0.7;
 }
 
-/* Responsive phrases */
 @media (max-width: 768px) {
   .phrase-anchor {
     max-width: 280px;
@@ -375,15 +398,230 @@ body {
 
 .progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, var(--accent), var(--accent-glow));
+  background: linear-gradient(90deg, var(--accent-glow-soft), var(--accent-glow));
   transition: width 0.1s linear;
-  box-shadow: 0 0 10px rgba(124, 179, 66, 0.5);
+  box-shadow: 0 0 10px rgba(217, 184, 119, 0.4);
 }
 
 /* ===== SCROLL SPACER ===== */
+/* Reste dans les tons sombres de la vidéo du début à la fin : plus de
+   bascule vers le blanc, la transition vers la section suivante se fait
+   dans la continuité de l'ambiance nocturne de la forêt. */
 .scroll-spacer {
-  height: 100vh;
-  background: linear-gradient(to bottom, #051405, #020a02);
+  height: 200vh;
+  background: linear-gradient(to bottom, #855800 0%, #422c00 55%, var(--jungle-dark) 100%);
+}
+
+/* ===== SECTION PARALLAXE (sombre, dans le prolongement de la vidéo) ===== */
+.parallax-section {
+  position: relative;
+  min-height: 100vh;
+  background: radial-gradient(ellipse at 50% 0%, var(--jungle-mid) 0%, var(--jungle-dark) 70%);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6rem 2rem;
+  border-radius: 40px 40px 0 0;
+  box-shadow: 0 -20px 50px rgba(0, 0, 0, 0.35);
+  margin-top: -40px;
+  z-index: 1;
+}
+
+.parallax-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  will-change: transform;
+}
+
+/* Les feuilles déco deviennent des taches de feuillage sombre, comme des
+   silhouettes de feuilles dans la pénombre, plutôt que des blobs blancs. */
+.deco-leaf {
+  position: absolute;
+  border-radius: 40% 60% 55% 45% / 55% 45% 60% 40%;
+  background: linear-gradient(135deg, var(--jungle-light), var(--jungle-mid));
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+  opacity: 0.55;
+  filter: blur(3px);
+}
+
+.leaf-1 {
+  width: 340px;
+  height: 340px;
+  top: 8%;
+  left: -6%;
+  transform: rotate(-15deg);
+}
+
+.leaf-2 {
+  width: 260px;
+  height: 260px;
+  bottom: 6%;
+  right: -4%;
+  transform: rotate(25deg);
+}
+
+.leaf-3 {
+  width: 180px;
+  height: 180px;
+  top: 55%;
+  left: 8%;
+  transform: rotate(60deg);
+  opacity: 0.4;
+}
+
+/* Les points déco deviennent de petits éclats de lumière dorée, comme les
+   rayons qui percent le feuillage dans la vidéo, au lieu de points blancs. */
+.deco-dot {
+  position: absolute;
+  border-radius: 50%;
+  background: var(--accent-glow);
+  opacity: 0.65;
+  box-shadow: 0 0 12px rgba(217, 184, 119, 0.5);
+}
+
+.dot-1 {
+  width: 10px;
+  height: 10px;
+  top: 20%;
+  right: 20%;
+}
+
+.dot-2 {
+  width: 6px;
+  height: 6px;
+  top: 65%;
+  right: 30%;
+}
+
+.dot-3 {
+  width: 8px;
+  height: 8px;
+  bottom: 18%;
+  left: 25%;
+}
+
+/* Grille contenu : image à gauche, texte à droite */
+.parallax-content-grid {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 1100px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
+  gap: 4rem;
+  will-change: transform;
+}
+
+.image-card-wrap {
+  position: relative;
+  perspective: 1200px;
+  will-change: transform, opacity, filter;
+}
+
+.image-card {
+  position: relative;
+  border-radius: 28px;
+  overflow: hidden;
+  aspect-ratio: 4 / 5;
+  max-width: 340px;
+  margin: 0 auto;
+  box-shadow:
+    0 20px 50px rgba(0, 0, 0, 0.45),
+    0 2px 8px rgba(0, 0, 0, 0.3),
+    0 0 0 1px rgba(217, 184, 119, 0.1);
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  transform-style: preserve-3d;
+  cursor: pointer;
+}
+
+.image-card img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.image-card-shine {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(217, 184, 119, 0.18), transparent 60%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.image-card:hover .image-card-shine {
+  opacity: 1;
+}
+
+.image-card:hover {
+  transition: transform 0.05s linear;
+}
+
+/* Contenu texte : texte clair sur fond sombre */
+.parallax-text-col {
+  text-align: left;
+}
+
+.parallax-eyebrow {
+  display: inline-block;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--accent-glow);
+  margin-bottom: 1rem;
+}
+
+.parallax-title {
+  font-family: 'Bungee', serif;
+  font-size: clamp(2rem, 4.5vw, 3rem);
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 1.5rem;
+  line-height: 1.15;
+}
+
+.parallax-text {
+  font-size: 1.05rem;
+  line-height: 1.7;
+  color: var(--text-muted);
+  margin-bottom: 2.5rem;
+}
+
+@media (max-width: 900px) {
+  .parallax-content-grid {
+    grid-template-columns: 1fr;
+    gap: 2.5rem;
+    text-align: center;
+  }
+
+  .parallax-text-col {
+    text-align: center;
+  }
+
+  .image-card {
+    aspect-ratio: 16 / 10;
+    max-width: 320px;
+    margin: 0 auto;
+  }
+}
+
+@media (max-width: 768px) {
+  .parallax-section {
+    padding: 4rem 1.5rem;
+  }
+
+  .leaf-1,
+  .leaf-2,
+  .leaf-3 {
+    opacity: 0.5;
+  }
 }
 
 /* ===== RESPONSIVE ===== */
@@ -398,6 +636,214 @@ body {
   }
 }
 
+/* ===== SECTION GLOBE ===== */
+.globe-scroll-wrap {
+  position: relative;
+  height: 400vh;
+}
+
+.globe-section {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  padding: 4rem 2rem;
+  background: radial-gradient(ellipse at 50% 100%, var(--jungle-mid) 0%, var(--jungle-dark) 70%);
+}
+
+.globe-outer {
+  width: min(100vw, 675px);
+  aspect-ratio: 1 / 1;
+  border-radius: 50%;
+  overflow: hidden;
+}
+
+.spline-globe-frame {
+  width: 100%;
+  height: 100%;
+}
+
+.spline-globe-frame {
+  position: relative;
+  overflow: hidden;
+  /* important : sans ça le masque peut déborder du cercle */
+}
+
+.spline-logo-mask {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 140px;
+  height: 70px;
+  background: radial-gradient(ellipse at bottom right,
+      var(--jungle-dark) 40%,
+      transparent 75%);
+  z-index: 2;
+  pointer-events: none;
+}
+
+.globe-grid {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 1100px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
+  gap: 4rem;
+}
+
+.globe-stage {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  will-change: opacity;
+}
+
+.globe-canvas-wrap {
+  position: relative;
+  width: min(60vw, 420px);
+  aspect-ratio: 1 / 1;
+  border-radius: 50%;
+  filter: drop-shadow(0 30px 60px rgba(0, 0, 0, 0.5));
+}
+
+.globe3d-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* Colonne de texte à droite du globe */
+.solutions-col {
+  position: relative;
+  text-align: left;
+  min-height: 280px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.solutions-eyebrow {
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  transition: opacity 0.5s ease;
+  margin-bottom: 1rem;
+}
+
+.solutions-stack {
+  position: relative;
+  min-height: 260px;
+}
+
+.solution-item {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  opacity: 0;
+  transform: translateY(18px);
+  pointer-events: none;
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+.solution-item.active {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.solution-index {
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--solution-color, var(--accent-glow));
+  margin-bottom: 0.75rem;
+}
+
+.solution-title {
+  font-family: 'Bungee', serif;
+  font-size: clamp(1.6rem, 3vw, 2.3rem);
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 1rem;
+  line-height: 1.2;
+}
+
+.solution-text {
+  font-size: 1rem;
+  line-height: 1.7;
+  color: var(--text-muted);
+  max-width: 440px;
+  margin-bottom: 1.5rem;
+}
+
+.solution-bar {
+  width: 48px;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--solution-color, var(--accent-glow));
+  transition: background 0.5s ease;
+}
+
+.solutions-cta-wrap {
+  margin-top: 2rem;
+  transition: opacity 0.5s ease;
+}
+
+.solutions-cta {
+  color: var(--jungle-dark);
+  text-decoration: none;
+}
+
+@media (max-width: 900px) {
+  .solutions-cta-wrap {
+    display: flex;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 900px) {
+  .globe-grid {
+    grid-template-columns: 1fr;
+    gap: 2.5rem;
+    text-align: center;
+  }
+
+  .globe-canvas-wrap {
+    width: min(70vw, 320px);
+  }
+
+  .solutions-col {
+    text-align: center;
+    align-items: center;
+    min-height: 240px;
+  }
+
+  .solution-item {
+    align-items: center;
+  }
+
+  .solution-text {
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .globe-canvas-wrap {
+    animation: none;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .particle {
     animation: none;
@@ -409,5 +855,12 @@ body {
 
   .phrase-card {
     animation: none;
+  }
+
+  .parallax-layer,
+  .parallax-content-grid,
+  .image-card-wrap,
+  .image-card {
+    transform: none !important;
   }
 }
